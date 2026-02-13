@@ -4,11 +4,8 @@ export const config = {
   runtime: "edge",
 };
 
-const SYSTEM_PROMPT = `
-You are the EarnLearnInvest Assistant — a friendly, concise financial guide.
-`;
-
-function cors(response) {
+// Helper to attach CORS headers to every response
+function withCors(response) {
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", "*");
   headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -16,14 +13,18 @@ function cors(response) {
   return new Response(response.body, { ...response, headers });
 }
 
+const SYSTEM_PROMPT = `
+You are the EarnLearnInvest Assistant — a friendly, concise financial guide.
+`;
+
 export default async function handler(req) {
-  // Preflight
+  // Handle preflight
   if (req.method === "OPTIONS") {
-    return cors(new Response(null, { status: 204 }));
+    return withCors(new Response(null, { status: 204 }));
   }
 
   if (req.method !== "POST") {
-    return cors(
+    return withCors(
       new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
       })
@@ -35,7 +36,7 @@ export default async function handler(req) {
     const userMessage = body.message;
 
     if (!userMessage) {
-      return cors(
+      return withCors(
         new Response(JSON.stringify({ error: "No message provided." }), {
           status: 400,
         })
@@ -58,14 +59,14 @@ export default async function handler(req) {
       completion.choices?.[0]?.message?.content ||
       "Sorry, I couldn't generate a response.";
 
-    return cors(
+    return withCors(
       new Response(JSON.stringify({ reply }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       })
     );
   } catch (err) {
-    return cors(
+    return withCors(
       new Response(JSON.stringify({ error: "Chat endpoint failed." }), {
         status: 500,
       })
