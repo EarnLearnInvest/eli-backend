@@ -32,7 +32,6 @@ When you reference a page:
 `;
 
 export default async function handler(req) {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
