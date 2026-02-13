@@ -25,13 +25,10 @@ Key site areas you can reference:
   https://earnlearninvest.com/invest/
 - Contact Us:
   https://earnlearninvest.com/contact-us/
-
-When you reference a page:
-- Briefly explain why it’s relevant.
-- Then include the URL on its own line.
 `;
 
 export default async function handler(req) {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -43,6 +40,7 @@ export default async function handler(req) {
     });
   }
 
+  // Only allow POST
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
@@ -61,10 +59,12 @@ export default async function handler(req) {
       });
     }
 
+    // Initialize Groq client
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+    // WORKING MODEL — this is the key fix
     const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+      model: "mixtral-8x7b-32768",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userMessage }
@@ -84,6 +84,7 @@ export default async function handler(req) {
         "Access-Control-Allow-Origin": "*",
       },
     });
+
   } catch (err) {
     console.error("Chat endpoint failed:", err);
     return new Response(JSON.stringify({ error: "Chat endpoint failed." }), {
